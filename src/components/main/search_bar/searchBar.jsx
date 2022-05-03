@@ -1,15 +1,20 @@
-import "./searchBarStyles.css";
+import { useState } from "react";
 
-const SearchBar = () => {
+const SearchBar = ({ getApiName }) => {
+  const [apiName, setApiName] = useState("");
+
   return (
-    <div className="container">
-      <div className="inner-container">
+    <div className="search-container">
+      <div className="search-inner-container">
         <input
           className="search-bar"
           type="text"
           placeholder="Enter the API name :"
+          onChange={(event) => setApiName(event.target.value)}
         />
-        <button className="search-button">Search</button>
+        <button className="search-button" onClick={() => getApiName(apiName)}>
+          Search
+        </button>
       </div>
     </div>
   );
