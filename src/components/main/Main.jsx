@@ -11,6 +11,7 @@ const Main = () => {
   const [apiName, setApiName] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(false);
 
   const getApiName = (arg) => {
     setApiName(arg);
@@ -40,6 +41,15 @@ const Main = () => {
     fetchApiData();
   });
 
+  setTimeout(() => {
+    if (loading) {
+      setReload(true);
+    }
+  }, 10000);
+
+  const reloadPage = () => {
+    window.location.reload();
+  };
   console.log(data);
   return (
     <>
@@ -47,9 +57,15 @@ const Main = () => {
         <SearchBar getApiName={getApiName} />
       </div>
       {loading ? (
-        <div>
+        reload ? (
+          <div className="reload-button-container"> 
+            <button className="button" onClick={reloadPage}>
+              Realod
+            </button>
+          </div>
+        ) : (
           <Loading />
-        </div>
+        )
       ) : (
         <div className="bottom-container">
           <div className="field-container">
