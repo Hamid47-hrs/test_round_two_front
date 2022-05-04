@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import axios from "axios";
 import ApiField from "./api_field/ApiField";
 import SearchBar from "./search_bar/searchBar";
 import DescriptionField from "./description_field/DescriptionField";
@@ -18,39 +20,97 @@ const Main = () => {
     setLoading(true);
   };
 
-  const fetchApiData = () => {
-    fetch("https://api.publicapis.org/entries")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
+  const sendApiToServer = (apis) => {
+    apis.forEach((item) => {
+      axios
+        .post("http://127.0.0.1:4000/save-api-in-database", {
+          api: item.API,
+          description: item.Description,
+          link: item.Link,
+          category: item.Category,
+        })
+        .then((res) => toast.success(res.data.message))
+        .catch((err) => toast.error(err.message));
+      // fetch("http://127.0.0.1:4000/save-api-in-database", {
+      //   mode: "no-cors",
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //  body: {
+      //     api: item.API,
+      //     description: item.Description,
+      //     link: item.Link,
+      //     category: item.Category,
+      //   }
+      // })
+      //   .then()
+      //   .then((data) => {
+      //     if (data) {
+      //       console.log("Data Sent to Server Successfully.");
+      //     }
+      //   })
+      //   .catch();
+    });
+  };
+
+  useEffect(() => {
+    setReload(false);
+    axios
+      .get("https://api.publicapis.org/entries")
+      .then((res) => {
+        if (res.data) {
           if (apiName) {
-            const apiValue = data.entries.filter((element) => {
+            const apiValue = res.data.entries.filter((element) => {
               return element["API"] === apiName;
             });
-            setData(apiValue);
+            if (apiValue.length > 0) {
+              setData(apiValue);
+              sendApiToServer(apiValue);
+            } else {
+              toast.warn("This API Does not Exist.");
+            }
           } else {
-            setData(data.entries);
+            setData(res.data.entries);
           }
           setLoading(false);
         }
       })
-      .catch((err) => console.log(err));
-  };
+      .catch((err) => toast.err(err.message));
+    // fetch("https://api.publicapis.org/entries", {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data) {
+    //       if (apiName) {
+    //         const apiValue = data.entries.filter((element) => {
+    //           return element["API"] === apiName;
+    //         });
+    //         setData(apiValue);
+    //         sendApiToServer(apiValue);
+    //       } else {
+    //         setData(data.entries);
+    //       }
+    //       setLoading(false);
+    //     }
+    //   })
+    //   .catch((err) => console.log(err));
+  }, [apiName]);
 
-  useEffect(() => {
-    fetchApiData();
-  });
-
-  setTimeout(() => {
-    if (loading) {
+  if (loading) {
+    setTimeout(() => {
       setReload(true);
-    }
-  }, 10000);
+    }, 30000);
+  }
 
   const reloadPage = () => {
     window.location.reload();
   };
-  console.log(data);
+
   return (
     <>
       <div className="top-container">
@@ -58,7 +118,7 @@ const Main = () => {
       </div>
       {loading ? (
         reload ? (
-          <div className="reload-button-container"> 
+          <div className="reload-button-container">
             <button className="button" onClick={reloadPage}>
               Realod
             </button>
